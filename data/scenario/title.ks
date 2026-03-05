@@ -82,13 +82,19 @@ $('#root_layer_game').css('opacity', 1);
 ; アニメーションをスキップして即座に最終状態に設定する。
 ;-------------------------------------------
 [iscript]
-// BGM waitClick状態をクリーンアップするヘルパー
-// ブラウザのautoplay制限でplaybgmがwaitClick状態になった場合、
-// ボタンクリック時にこれを呼んでweaklyStop状態を解除する
-function _unlockAudio() {
-  $(".tyrano_base").off("click.bgm");
+// BGM waitClick状態をクリーンアップするヘルパー（グローバルに定義してスコープ問題を回避）
+// ブラウザのautoplay制限でplaybgmがwaitClick状態になった場合、ボタンクリック時に呼ぶ
+window._unlockAudio = function() {
+  var wasLocked = !(TYRANO.kag.tmp && TYRANO.kag.tmp.ready_audio);
+  if (TYRANO.kag.readyAudio) TYRANO.kag.readyAudio();
   if (TYRANO.kag.cancelWeakStop) TYRANO.kag.cancelWeakStop();
-}
+  $(".tyrano_base").off("click.bgm");
+  // audio未解放状態だった場合のみBGMを手動で開始（playbgmのwaitClickを代替）
+  // _titleBgmSkipped は Config/Extra からの復帰時に true になる
+  if (wasLocked && !window._titleBgmSkipped) {
+    TYRANO.kag.ftag.startTag('playbgm', {storage:'op.mp3'});
+  }
+};
 
 // 既存の UI を削除してから再構築（[jump] ループでの二重作成を防ぐ）
 $('#title_ui').remove();
@@ -164,6 +170,7 @@ $('.tyrano_base').append(
 // tf._title_skip_anim は各ボタンの jump 前に true にセットされている
 var _skipAnim = !!(tf._title_skip_anim);
 tf._title_skip_anim = false; // フラグをリセット（次回通常遷移のため）
+window._titleBgmSkipped = _skipAnim; // _unlockAudio から参照するためグローバルに保存
 
 // 白オーバーレイをフェードアウト（背景のフェードイン演出）
 anime({
