@@ -87,7 +87,11 @@ $('#root_layer_game').css('opacity', 1);
 // BGMアンロックヘルパー（windowに直接代入してevalスコープ問題を回避）
 // 呼び出しは必ず window.tyBgmUnlock() と明示的に参照する
 window.tyBgmUnlock = function() {
-  var wasLocked = !(TYRANO.kag.tmp && TYRANO.kag.tmp.ready_audio);
+  var howlerCtx = (window.Howler && window.Howler.ctx) ? window.Howler.ctx : null;
+  var wasLocked = howlerCtx ? (howlerCtx.state !== 'running') : !(TYRANO.kag.tmp && TYRANO.kag.tmp.ready_audio);
+  if (howlerCtx && typeof howlerCtx.resume === 'function' && howlerCtx.state !== 'running') {
+    try { howlerCtx.resume(); } catch (e) { console.warn('[tyBgmUnlock] resume failed', e); }
+  }
   if (TYRANO.kag.readyAudio) TYRANO.kag.readyAudio();
   if (TYRANO.kag.cancelWeakStop) TYRANO.kag.cancelWeakStop();
   $(".tyrano_base").off("click.bgm");
@@ -363,9 +367,6 @@ $('#tbtn_exit').on('click', function(e) {
   else { window.close(); }                           // ブラウザ
 });
 
-// ready_audioをtrueにして[playbgm]がwaitClick（シナリオ停止）しないようにする
-// Howler.jsがAudioContext未解放でも内部キューに積み、最初のユーザー操作で自動再生する
-if (TYRANO.kag.readyAudio) TYRANO.kag.readyAudio();
 [endscript]
 
 ; BGMをUIの後に再生（Config/Extraから戻った場合はスキップ）
