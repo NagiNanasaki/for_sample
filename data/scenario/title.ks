@@ -363,11 +363,9 @@ $('#tbtn_exit').on('click', function(e) {
   else { window.close(); }                           // ブラウザ
 });
 
-// mousedown/touchstart は click より早く発火し、ブラウザのユーザージェスチャーとして認識される
-// → ボタンを押した瞬間（クリック完了前）にBGMアンロックを試みることで早期再生を実現
-$(document).one('mousedown.bgm_early touchstart.bgm_early', function() {
-  window.tyBgmUnlock();
-});
+// ready_audioをtrueにして[playbgm]がwaitClick（シナリオ停止）しないようにする
+// Howler.jsがAudioContext未解放でも内部キューに積み、最初のユーザー操作で自動再生する
+if (TYRANO.kag.readyAudio) TYRANO.kag.readyAudio();
 [endscript]
 
 ; BGMをUIの後に再生（Config/Extraから戻った場合はスキップ）
