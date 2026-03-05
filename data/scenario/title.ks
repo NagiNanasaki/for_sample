@@ -48,6 +48,11 @@ try {
 // 既存の白オーバーレイを削除してから新規作成（二重作成を防ぐ）
 $('#title_fade_overlay').remove();
 $('.tyrano_base').append('<div id="title_fade_overlay" style="position:absolute;top:0;left:0;width:1280px;height:720px;background:#fff;z-index:99999;pointer-events:none;"></div>');
+// フォールバック：3秒後に強制フェードアウト（anime()が失敗した場合の保険）
+setTimeout(function() {
+  var el = document.getElementById('title_fade_overlay');
+  if (el) { $(el).animate({opacity:0}, 500, function(){ $(this).remove(); }); }
+}, 3000);
 [endscript]
 
 ; マスク（黒暗転）を即座に解除
