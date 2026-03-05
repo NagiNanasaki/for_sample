@@ -171,6 +171,7 @@ $('.tyrano_base').append(
 // tf._title_skip_anim は各ボタンの jump 前に true にセットされている
 var _skipAnim = !!(tf._title_skip_anim);
 tf._title_skip_anim = false; // フラグをリセット（次回通常遷移のため）
+tf._bgmSkip = _skipAnim;     // [if]ガード用。上でリセット済みのため別変数に保存
 window.tyBgmSkipped = _skipAnim; // tyBgmUnlock から参照するためグローバルに保存
 
 // 白オーバーレイをフェードアウト（背景のフェードイン演出）
@@ -361,12 +362,18 @@ $('#tbtn_exit').on('click', function(e) {
   if (typeof nw !== 'undefined') { nw.App.quit(); } // NW.js (デスクトップアプリ)
   else { window.close(); }                           // ブラウザ
 });
+
+// mousedown/touchstart は click より早く発火し、ブラウザのユーザージェスチャーとして認識される
+// → ボタンを押した瞬間（クリック完了前）にBGMアンロックを試みることで早期再生を実現
+$(document).one('mousedown.bgm_early touchstart.bgm_early', function() {
+  window.tyBgmUnlock();
+});
 [endscript]
 
 ; BGMをUIの後に再生（Config/Extraから戻った場合はスキップ）
 ; iscript実行後にplaybgmを置くことで、ブラウザのautoplay制限に対応：
 ; ready_audioがfalseでもUIは既に構築済みのためボタンは正常に動作する
-[if exp="!tf._title_skip_anim"]
+[if exp="!tf._bgmSkip"]
 [playbgm storage="op.mp3"]
 [endif]
 
