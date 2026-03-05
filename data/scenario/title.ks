@@ -84,14 +84,15 @@ $('#root_layer_game').css('opacity', 1);
 [iscript]
 // BGM waitClick状態をクリーンアップするヘルパー（グローバルに定義してスコープ問題を回避）
 // ブラウザのautoplay制限でplaybgmがwaitClick状態になった場合、ボタンクリック時に呼ぶ
-window._unlockAudio = function() {
+// BGMアンロックヘルパー（windowに直接代入してevalスコープ問題を回避）
+// 呼び出しは必ず window.tyBgmUnlock() と明示的に参照する
+window.tyBgmUnlock = function() {
   var wasLocked = !(TYRANO.kag.tmp && TYRANO.kag.tmp.ready_audio);
   if (TYRANO.kag.readyAudio) TYRANO.kag.readyAudio();
   if (TYRANO.kag.cancelWeakStop) TYRANO.kag.cancelWeakStop();
   $(".tyrano_base").off("click.bgm");
   // audio未解放状態だった場合のみBGMを手動で開始（playbgmのwaitClickを代替）
-  // _titleBgmSkipped は Config/Extra からの復帰時に true になる
-  if (wasLocked && !window._titleBgmSkipped) {
+  if (wasLocked && !window.tyBgmSkipped) {
     TYRANO.kag.ftag.startTag('playbgm', {storage:'op.mp3'});
   }
 };
@@ -170,7 +171,7 @@ $('.tyrano_base').append(
 // tf._title_skip_anim は各ボタンの jump 前に true にセットされている
 var _skipAnim = !!(tf._title_skip_anim);
 tf._title_skip_anim = false; // フラグをリセット（次回通常遷移のため）
-window._titleBgmSkipped = _skipAnim; // _unlockAudio から参照するためグローバルに保存
+window.tyBgmSkipped = _skipAnim; // tyBgmUnlock から参照するためグローバルに保存
 
 // 白オーバーレイをフェードアウト（背景のフェードイン演出）
 anime({
@@ -250,7 +251,7 @@ $('.title-btn').on('click', function() {
 //-------------------------------------------
 $('#tbtn_newgame').on('click', function(e) {
   e.stopPropagation(); // イベントバブリングを防止（誤動作防止）
-  _unlockAudio(); // BGM waitClick状態のクリーンアップ
+  window.tyBgmUnlock();
   // 黒オーバーレイを追加してフェードイン
   $('.tyrano_base').append('<div id="ng_black" style="position:absolute;top:0;left:0;width:1280px;height:720px;background:#000;z-index:99999;opacity:0;pointer-events:none;"></div>');
   anime({
@@ -275,7 +276,7 @@ $('#tbtn_newgame').on('click', function(e) {
 //-------------------------------------------
 $('#tbtn_continue').on('click', function(e) {
   e.stopPropagation();
-  _unlockAudio();
+  window.tyBgmUnlock();
   $('.title-btn').css('pointer-events', 'none'); // 多重クリック防止
   // 薄いベージュのオーバーレイを表示して画面切り替えを隠す
   $('<div id="exit_overlay">').css({position:'absolute',top:0,left:0,width:'1280px',height:'720px',background:'#f5e8d5',zIndex:99999,opacity:0,pointerEvents:'none'}).appendTo('.tyrano_base');
@@ -313,7 +314,7 @@ $('#tbtn_continue').on('click', function(e) {
 //-------------------------------------------
 $('#tbtn_config').on('click', function(e) {
   e.stopPropagation();
-  _unlockAudio();
+  window.tyBgmUnlock();
   $('.title-btn').css('pointer-events', 'none');
   $('<div id="exit_overlay">').css({position:'absolute',top:0,left:0,width:'1280px',height:'720px',background:'#f5e8d5',zIndex:99999,opacity:0,pointerEvents:'none'}).appendTo('.tyrano_base');
   anime({
@@ -335,7 +336,7 @@ $('#tbtn_config').on('click', function(e) {
 //-------------------------------------------
 $('#tbtn_extra').on('click', function(e) {
   e.stopPropagation();
-  _unlockAudio();
+  window.tyBgmUnlock();
   $('.title-btn').css('pointer-events', 'none');
   $('<div id="exit_overlay">').css({position:'absolute',top:0,left:0,width:'1280px',height:'720px',background:'#f5e8d5',zIndex:99999,opacity:0,pointerEvents:'none'}).appendTo('.tyrano_base');
   anime({
@@ -356,7 +357,7 @@ $('#tbtn_extra').on('click', function(e) {
 //-------------------------------------------
 $('#tbtn_exit').on('click', function(e) {
   e.stopPropagation();
-  _unlockAudio();
+  window.tyBgmUnlock();
   if (typeof nw !== 'undefined') { nw.App.quit(); } // NW.js (デスクトップアプリ)
   else { window.close(); }                           // ブラウザ
 });
