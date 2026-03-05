@@ -51,7 +51,12 @@ $('.tyrano_base').append('<div id="title_fade_overlay" style="position:absolute;
 [endscript]
 
 ; マスク（黒暗転）を即座に解除
-@mask_off time="0"
+; NOTE: @mask_off time="0" はブラウザでanimationendが発火しないことがあり
+;       ゲームが止まるバグの原因になる → iscriptで直接削除する
+[iscript]
+$('.layer_mask').remove();
+$('#root_layer_game').css('opacity', 1);
+[endscript]
 
 *start
 
